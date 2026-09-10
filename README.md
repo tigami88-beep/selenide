@@ -1,0 +1,2 @@
+[![Java CI with Gradle](https://github.com/tigami88-beep/selenide/actions/workflows/gradle.yml/badge.svg)](https://github.com/tigami88-beep/selenide/actions/workflows/gradle.yml)
+[![Build status](https://ci.appveyor.com/api/projects/status/wib1hjvw3mo2a8ka/branch/main?svg=true)](https://ci.appveyor.com/project/tigami88-beep/selenide/branch/main)
