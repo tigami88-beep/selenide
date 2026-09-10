@@ -1,3 +1,4 @@
+
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
@@ -16,8 +17,7 @@ public class CardDeliveryTest {
 
     @BeforeEach
     void setUp() {
-        // Замени URL_СТРАНИЦЫ_ФОРМЫ на реальный адрес страницы с формой
-        open("URL_СТРАНИЦЫ_ФОРМЫ");
+        open("URL_СТРАНИЦЫ_ФОРМЫ"); // Вставь реальный URL
     }
 
     @AfterEach
@@ -27,32 +27,30 @@ public class CardDeliveryTest {
 
     @Test
     void shouldSuccessfullySubmitCardDeliveryForm() {
-        // 1. Город (случайный административный центр из JSON)
+        // 1. Город (случайный из JSON)
         String randomCity = CitiesLoader.getRandomCity();
         \$("#city").setValue(randomCity);
 
-        // 2. Дата (не ранее 3 дней от текущей)
+        // 2. Дата (через 3 дня)
         String validDate = getValidDate();
         \$("#date").setValue(validDate);
 
-        // 3. ФИО (только русские буквы, дефисы, пробелы)
+        // 3. ФИО
         \$("#fullName").setValue("Иван Петров");
 
-        // 4. Телефон (11 цифр, + в начале)
+        // 4. Телефон
         \$("#phone").setValue("+79000000000");
 
-        // 5. Согласие с обработкой ПДн (чекбокс)
+        // 5. Согласие (чекбокс)
         \$("#agreement").click();
 
-        // 6. Нажатие кнопки «Забронировать»
+        // 6. Кнопка «Забронировать»
         \$("#bookButton").click();
 
-        // 7. Проверка состояния загрузки (не более 15 секунд)
-        // Элемент с индикатором загрузки должен появиться в DOM
+        // 7. Проверка загрузки (ждем появления элемента)
         \$("#loading").shouldBe(Condition.visible, Duration.ofSeconds(15));
 
-        // 8. Проверка появления всплывающего окна об успехе
-        // Модальное окно с подтверждением бронирования
+        // 8. Проверка успеха
         \$("#success-modal").shouldBe(Condition.visible, Duration.ofSeconds(15));
     }
 
