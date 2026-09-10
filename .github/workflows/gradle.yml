@@ -1,29 +1,59 @@
+
 name: Java CI with Gradle
 
-on: [push, pull_request]
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: "11"
+          distribution: "temurin"
+          cache: gradle
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Start SUT
-        # Запускаем SUT,
-        # имя файла SUT будет отличаться в каждой задаче.
-        # & означает, что в фоновом режиме не блокируем терминал для запуска тестов,
-        # обязательно должен быть для запуска SUT в CI
-        run: java -jar ./artifacts/app-mbank.jar &
-      - name: Build with Gradle
-        # Запускаем автотесты
-        # Для проектов на базе Selenide необходимо добавить параметр для запуска браузера
-        # в headless режиме -Dselenide.headless=true, параметр --info должен остаться
-        run: ./gradlew test --info
+
+      - name: Start SUT (in background)
+        # Запускаем приложение в фоне. Оно должно слушать HTTP-порт (например, 8080).
+        run: java -jar ./artifacts/app-mbank.jar > sut.log 2>&1 &
+
+      - name: Wait for SUT to be ready
+        # Ждём, пока SUT начнёт отвечать на HTTP-запросы.
+        # Подставь правильный порт, если у тебя не 8080.
+        run: |
+          max_attempts=60
+          for i in $(seq 1 $max_attempts); do
+            if curl -f -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "SUT is ready"
+              break
+            fi
+            echo "Waiting for SUT (attempt $i/$max_attempts)..."
+            sleep 2
+          done
+          if [ $i -eq $max_attempts ]; then
+            echo "SUT did not become ready in time"
+            cat sut.log
+            exit 1
+          fi
+
+      - name: Run tests with Selenide headless
+        run: ./gradlew test --info -Dselenide.headless=true --stacktrace
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: build/reports/tests/
