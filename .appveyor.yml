@@ -12,12 +12,11 @@ cache:
   - /home/appveyor/.gradle
 
 install:
-  # Запускаем SUT в фоне
   - java -jar ./artifacts/app-card-delivery.jar &
   - chmod +x gradlew
 
+environment:
+  JAVA_TOOL_OPTIONS: -Dhttps.protocols=TLSv1.2 -Dfile.encoding=UTF8
+
 build_script:
-  # Сначала отдельно подтягиваем зависимости
-  - ./gradlew dependencies --refresh-dependencies
-  # Потом запускаем тесты
   - ./gradlew test --info -Dselenide.headless=true
