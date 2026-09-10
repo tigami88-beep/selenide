@@ -17,3 +17,8 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+jar {
+    manifest {
+        attributes 'Main-Class': 'ru.netology.Application'  // замени на свой главный класс
+    }
+}
